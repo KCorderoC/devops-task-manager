@@ -79,4 +79,5 @@ Construcción de la imagen Docker
 
 ## Autor
 
-Proyecto desarrollado como práctica académica para la asignatura DevOps.
+Katerin Cordero  
+Proyecto desarrollado como práctica académica para la asignatura Electiva 1.
