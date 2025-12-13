@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Checklist DevOps</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #eef2f7;
+  display: flex;
+  justify-content: center;
+  padding-top: 50px;
+}
+
+.app {
+  background: #fff;
+  width: 420px;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+form {
+  display: flex;
+  gap: 10px;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 10px;
+}
+
+button {
+  padding: 10px;
+  cursor: pointer;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: gray;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+<h1>Checklist</h1>
+
+<form id="taskForm">
+  <input type="text" id="taskName" placeholder="Nueva tarea" required>
+  <button>+</button>
+</form>
+
+<ul id="taskList"></ul>
+</div>
+
+<script>
+const form = document.getElementById('taskForm');
+const list = document.getElementById('taskList');
+
+async function loadTasks() {
+  const res = await fetch('/tasks');
+  const tasks = await res.json();
+  list.innerHTML = '';
+
+  tasks.forEach(task => {
+    const li = document.createElement('li');
+
+    const left = document.createElement('div');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+
+    const span = document.createElement('span');
+    span.textContent = task.name;
+    span.style.marginLeft = '8px';
+
+    checkbox.addEventListener('change', () => {
+      span.classList.toggle('completed');
+    });
+
+    left.appendChild(checkbox);
+    left.appendChild(span);
+
+    const del = document.createElement('button');
+    del.textContent = '❌';
+    del.onclick = () => deleteTask(task.id);
+
+    li.appendChild(left);
+    li.appendChild(del);
+    list.appendChild(li);
+  });
+}
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = document.getElementById('taskName').value;
+
+  await fetch('/tasks', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ name })
+  });
+
+  form.reset();
+  loadTasks();
+});
+
+async function deleteTask(id) {
+  await fetch('/tasks/' + id, { method: 'DELETE' });
+  loadTasks();
+}
+
+loadTasks();
+</script>
+</body>
+</html>
