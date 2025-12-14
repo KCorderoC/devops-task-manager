@@ -1,27 +1,49 @@
 const express = require('express');
-const app = express();
-app.use(express.json());
+const db = require('./database');
 
-// Servir frontend
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.use(express.json());
 app.use(express.static('public'));
 
-const port = 3000;
-
-let tasks = []; // base de datos temporal
-
-// Endpoints CRUD
-app.get('/tasks', (req, res) => res.json(tasks));
-app.post('/tasks', (req, res) => {
-    const task = { id: tasks.length + 1, name: req.body.name };
-    tasks.push(task);
-    res.status(201).json(task);
+// GET tasks
+app.get('/tasks', (req, res) => {
+  db.all('SELECT * FROM tasks', [], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
 });
-app.delete('/tasks/:id', (req, res) => {
-    tasks = tasks.filter(t => t.id != req.params.id);
-    res.sendStatus(204);
+
+// POST task
+app.post('/tasks', (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res.status(400).json({ error: 'Task name required' });
+  }
+
+  db.run(
+    'INSERT INTO tasks (name) VALUES (?)',
+    [name],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.status(201).json({ id: this.lastID, name });
+    }
+  );
 });
 
 // Health check
 app.get('/health', (req, res) => res.send('OK'));
 
-app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
+// SOLO escuchar si NO estamos en test
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
+}
+
+module.exports = app;

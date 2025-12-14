@@ -77,6 +77,11 @@ Ejecución de pruebas automatizadas
 
 Construcción de la imagen Docker
 
+## Alertas
+
+Las alertas pueden configurarse a nivel de pipeline CI/CD mediante el fallo de pruebas
+o errores en el build, notificando automáticamente a los desarrolladores a través de GitHub.
+
 ## Autor
 
 Katerin Cordero  
